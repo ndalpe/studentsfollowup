@@ -4,9 +4,9 @@
 $ADMIN->add(
 	'reports',
 	new admin_externalpage(
-		'reportstudentsfollowup',
-		get_string('pluginname', 'report_studentsfollowup'),
-		"/report/studentsfollowup/index.php",
+		'reportiomadfollowup',
+		get_string('pluginname', 'report_iomadfollowup'),
+		"/report/iomadfollowup/index.php",
 		'moodle/site:viewreports'
 	)
 );

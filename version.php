@@ -4,13 +4,13 @@
  *
  * This File contains information about the current version of report/setdent analytics
  *
- * @package    report_studentanalytics
+ * @package    report_iomadfollowup
  * @copyright
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die;
 
-$plugin->version   = 2017072406;    // The current plugin version (Date: YYYYMMDDXX)
+$plugin->version   = 2018102805;    // The current plugin version (Date: YYYYMMDDXX)
 $plugin->requires  = 2016051900;    // Requires this Moodle version
-$plugin->component = 'report_studentsfollowup';  // Full name of the plugin (used for diagnostics)
+$plugin->component = 'report_iomadfollowup';  // Full name of the plugin (used for diagnostics)

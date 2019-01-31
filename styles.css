@@ -1,0 +1,15 @@
+.col1 {
+	background-color: #eceeef;
+}
+
+.col2 {
+	background-color: #FFF;
+}
+
+.selected .col1 {
+	background-color: rgba(137, 196, 229, 0.9);
+}
+
+.selected .col2 {
+	background-color: rgba(137, 196, 229, 0.9);
+}

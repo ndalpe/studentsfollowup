@@ -45,24 +45,13 @@ define(
                 }
 
                 // Apply the cohort filter
-                $("#cohorts").change(function(){
-                    var c = $("#cohorts option:selected").val();
-                    var m = $("#modes option:selected").val();
-                    document.location.href = "/report/studentsfollowup/index.php?c="+c+"&m="+m;
+                $("#countries").change(function(){
+                    document.location.href = "/report/iomadfollowup/index.php?c="+$("#countries option:selected").val();
                 });
-                // $("#modes").change(function(){
-                //     var c = $("#cohorts option:selected").val();
-                //     var m = $("#modes option:selected").val();
-                //     document.location.href = "/report/studentsfollowup/index.php?c="+c+"&m="+m;
-                // });
 
                 // highlight a student's row on click
-                $('#reportTbl tr').on('click', function(){
-                    // use style attr toggle the the module is self-contained
-                    $(this).attr('style', function(index, attr){
-                        return attr != 'background-color:#89c4e5;' ? 'background-color:#89c4e5;' : 'background-color:transparent;';
-                    });
-                });
+                $('#reportTbl tr').on('click', function(){$(this).toggleClass('selected');});
+
             }); // end document.ready
         } // end: init
     };

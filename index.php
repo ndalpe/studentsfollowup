@@ -15,164 +15,169 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Performance overview report
+ * IOMAD Student Follow-up report
  *
- * @package   report_performance
- * @copyright 2013 Rajesh Taneja
+ * @package   report_iomadfollowup
+ * @copyright 2018 Bridgeus Kizuna Asia
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 define('NO_OUTPUT_BUFFERING', true);
 
 require('../../config.php');
-require_once($CFG->dirroot.'/report/studentsfollowup/locallib.php');
+require_once($CFG->dirroot.'/report/iomadfollowup/locallib.php');
 require_once($CFG->libdir . '/gradelib.php');
 
-require_login();
+require_login(0, false);
+
+$systemcontext = context_system::instance();
+
+// Get the user capability
+$view_company = has_capability('mod/report_iomadanalytics:view_stats_company', $systemcontext);
+$view_country = has_capability('mod/report_iomadanalytics:view_stats_country', $systemcontext);
+$view_all     = has_capability('mod/report_iomadanalytics:view_stats_all',     $systemcontext);
+
+$PAGE->set_url('/report/iomadfollowup/index.php');
+
+$PAGE->set_context($systemcontext);
+
+// Set the HTML <title> tag
+$PAGE->set_title(get_string('report_page_title', 'report_iomadfollowup'));
+
+// Set the page heading (big title before content)
+$PAGE->set_heading(get_string('report_page_title', 'report_iomadfollowup'));
 
 
-$report = new report_followup();
+/*************************************************/
+/************** Define user's Role ***************/
+/*************************************************/
+$Capability = new stdClass();
 
-$Cohorts = $report->report_followup_get_cohorts();
+// SuperAdmin
+if ($view_all===true) {
+	$Capability->view_stats_all = true;
+	$Capability->view_stats_country = false;
+	$Capability->view_stats_company = false;
+	$Capability->adminType = 'SuperAdmin';
 
-// Param for the selected cohort
-$paramSelectedCohort = optional_param('c', '', PARAM_ALPHANUMEXT);
+// Country Admin
+} else if ($view_all===false && $view_country===true) {
+	$Capability->view_stats_all = false;
+	$Capability->view_stats_country = true;
+	$Capability->view_stats_company = false;
+	$Capability->adminType = 'CountryAdmin';
 
-// Set the selected cohort id
-$report->report_followup_set_cohort_id($paramSelectedCohort);
+// Company Admin
+} else if ($view_all===false && $view_country===false && $view_company===true) {
+	$Capability->view_stats_all = false;
+	$Capability->view_stats_country = false;
+	$Capability->view_stats_company = true;
+	$Capability->adminType = 'CompanyAdmin';
+}
 
+/*********************************************/
+/************** URL Param check **************/
+/*********************************************/
+$paramSelectedCompany = optional_param('c', '', PARAM_INT);
+if (empty($paramSelectedCompany)) {
+	$paramCompanyId = $USER->company->id;
+} else {
+	$paramCompanyId = $paramSelectedCompany;
+}
 
-// Param for the selected display mode
-$paramSelectedMode = optional_param('m', '', PARAM_ALPHANUMEXT);
+/******************************************/
+/************** BEGIN REPORT **************/
+/******************************************/
+$report = new report_iomadfollowup();
 
-// Set the selected cohort id
-$report->report_followup_set_mode_id($paramSelectedMode);
+// Set the admin company ID
+$report->setCompanyId($paramCompanyId);
 
-// build report
-$data = $report->report_followup_report();
+// Get student's profile info and grades for all quiz
+$Students = $report->getStudentsGrades();
 
-// Print the header.
-// admin_externalpage_setup('reportstudentsfollowup', '', null, '', array('pagelayout'=>'report'));
+// Get a translated, shortened list of course name
+$Courses = $report->getCourses();
+
+// Print header.
 echo $OUTPUT->header();
 
-echo $OUTPUT->heading(get_string('pluginname', 'report_studentsfollowup'));
+// Init JS AMD module
+$PAGE->requires->js_call_amd('report_iomadfollowup/iomadfollowup', 'init');
 
-$PAGE->requires->js_call_amd('report_studentsfollowup/studentsfollowup', 'init');
-
+// downloadable file name
+$filename = 'followup_report_'.date('y-m-d_h_i_s').'.xlsx';
 ?>
 <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.15/css/jquery.dataTables.min.css">
 
+<!-- Country Menu -->
+<?php
+if ($Capability->adminType != 'CompanyAdmin') {
+	if ($Capability->adminType == 'CountryAdmin') {
+		$countries = $report->getCountries($limitToOwnCountry=true);
+	} else {
+		$countries = $report->getCountries($limitToOwnCountry=false);
+	}
+?>
 <div class="form-group">
-<label for="cohorts"><?php echo get_string('choose_cie', 'report_studentsfollowup'); ?></label>
-<select class="form-control yadcf-filter" id="cohorts">
-	<option value="all"><?php echo get_string('all_companies', 'report_studentsfollowup'); ?></option>
-<?php
-foreach ($Cohorts as $key => $cohort) {
-	if ($report->cohort_id == $cohort->id) {
-		$s = ' selected';
+	<label for="countries"><?php echo get_string('choose_company', 'report_iomadfollowup'); ?></label>
+	<select class="form-control" id="countries">
+	<?php
+	foreach ($countries as $key => $country) {
+		echo '<optgroup label="'.get_string($country->country, 'countries').'">';
+		$Companies = $report->getCompaniesInCountry($country->country);
+		foreach ($Companies as $companyId => $company) {
+			$selected = ($companyId == $paramCompanyId) ? ' selected' : '';
+			echo '<option value="'.$companyId.'"'.$selected.'>'.$company->name.'</option>';
+		}
+		echo '</optgroup>';
 	}
-	echo '<option value="'.$cohort->id.'"'.$s.'>'.$cohort->name.' ('.$cohort->cntstudent.' '.get_string('students', 'report_studentsfollowup').')</option>';
-	$s = '';
-}
-?>
-</select>
+	?>
+	</select>
 </div>
-
-<!-- <div class="form-group">
-	<div class="col-sm-10">
-		<div class="checkbox">
-			<label>
-				<input type="checkbox" class="hide_not_started"> <?php echo get_string('hide_not_started', 'report_studentsfollowup'); ?>
-			</label>
-		</div>
-	</div>
-</div> -->
-
-
-<div class="form-group hidden">
-<label for="modes"><?php echo get_string('choose_mode', 'report_studentsfollowup'); ?></label>
-<select class="form-control" id="modes">
-<?php
-foreach ($report->display_mode as $key => $mode) {
-	if ($report->mode_id == $key) {
-		$s = ' selected';
-	}
-	echo '<option value="'.$key.'"'.$s.'>'.get_string('choose_mode_'.$key, 'report_studentsfollowup').'</option>';
-	$s = '';
-}
-?>
-</select>
+<div class="form-group">
+<a class="btn btn-primary" href="download/<?php echo $filename; ?>">Download Grages</a>
 </div>
+<?php } ?>
 <p>&nbsp;</p>
 
 <!--table table-bordered table-condensed table-hover-->
 <div class="wrapperFloatTbl dataTables_wrapper">
-<table id="reportTbl">
-	<thead class="thead-default">
-		<tr>
-			<th rowspan="2">Username</th>
-			<th rowspan="2">Email</th>
-			<th rowspan="2">Organization</th>
-			<th colspan="2" class="text-center">Day 1</th>
-			<th colspan="2" class="text-center">Day 2</th>
-			<th colspan="2" class="text-center">Day 3</th>
-			<th colspan="2" class="text-center">Day 4</th>
-			<th colspan="2" class="text-center">Day 5</th>
-			<th colspan="2" class="text-center">Day 6</th>
-			<th colspan="2" class="text-center">Day 7</th>
-			<th colspan="2" class="text-center">Day 8</th>
-			<th colspan="2" class="text-center">Day 9</th>
-			<th colspan="2" class="text-center">Day 10</th>
-			<th colspan="2" class="text-center">Final Test</th>
-		</tr>
-		<tr>
-			<th class="text-center">Completed</th><th class="text-center">Time</th>
-			<th class="text-center">Completed</th><th class="text-center">Time</th>
-			<th class="text-center">Completed</th><th class="text-center">Time</th>
-			<th class="text-center">Completed</th><th class="text-center">Time</th>
-			<th class="text-center">Completed</th><th class="text-center">Time</th>
-			<th class="text-center">Completed</th><th class="text-center">Time</th>
-			<th class="text-center">Completed</th><th class="text-center">Time</th>
-			<th class="text-center">Completed</th><th class="text-center">Time</th>
-			<th class="text-center">Completed</th><th class="text-center">Time</th>
-			<th class="text-center">Completed</th><th class="text-center">Time</th>
-			<th class="text-center">Completed</th><th class="text-center">Time</th>
-		</tr>
-	</thead>
-	<tbody>
 <?php
-foreach ($data as $key => $student) {
-	if (empty($student['cohort_name'])) {
-		$cohort_name = 'n/a';
-	} else {
-		$cohort_name = $student['cohort_name'];
-	}
-	echo '<tr>';
-	echo '<td>'.$student['username'].'</td>';
-	echo '<td>'.$student['email'].'</td>';
-	echo '<td>'.$cohort_name.'</td>';
-	$i = 0;
-	if (isset($student['grades'])) {
-		foreach ($student['grades'] as $grade) {
-			if ($i%2) {
-				$c = ' class="text-center"';
-			} else {
-				$c = ' class="text-center"'; //report_odd_col
-			}
-			echo '<td'.$c.'>'.$grade->percent.'%</td>';
-			echo '<td'.$c.'>'.$grade->td.'</td>';
-			$i++;
-		}
-	}
-	if ($i < 11) {
-		echo str_repeat('<td>&nbsp;</td><td>&nbsp;</td>', 11-$i);
-	}
-	echo '</tr>';
-}
-?>
-	</tbody>
-</table>
-</div>
+$html = '';
+$html .= '<table id="reportTbl">';
+$html .= '<thead class="thead-default">';
+$html .= '<tr>';
+$html .= '<th>'.get_string('col_students_name',       'report_iomadfollowup').'</th>';
+$html .= '<th>'.get_string('col_students_department', 'report_iomadfollowup').'</th>';
+$html .= '<th>'.get_string('col_students_level',      'report_iomadfollowup').'</th>';
 
-<?php
-echo $OUTPUT->footer();
+foreach ($Courses as $key => $course) {
+	$html .= '<th>'.$course->fullname.'</th>';
+}
+
+$html .= '</tr></thead>';
+
+$html .= '<tbody>';
+
+foreach ($Students as $userId => $grades) {
+	$i = 0;
+	$html .= '<tr><td>'.$grades['profile']['name'].'</td>';
+	$html .= '<td>'.$grades['profile']['department'].'</td>';
+	$html .= '<td>'.$grades['profile']['level'].'</td>';
+	foreach ($grades['grades'] as $grade) {
+		// alternate col color
+		$colClass = (is_int($i/2) === true) ? 'col1' : 'col2';$i++;
+		$html .= '<td class="'.$colClass.'">'.$grade.'</td>';
+	}
+	$html .= "</tr>\n";
+}
+$html .= '</tbody></table>';
+
+// write the html table so it can be downloaded
+file_put_contents($CFG->dirroot.'/report/iomadfollowup/download/'.$filename, $html);
+
+echo $html;
+?>
+</div>
+<?php echo $OUTPUT->footer();
