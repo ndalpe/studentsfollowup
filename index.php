@@ -135,10 +135,10 @@ if ($Capability->adminType != 'CompanyAdmin') {
 	?>
 	</select>
 </div>
+<?php } ?>
 <div class="form-group">
 <a class="btn btn-primary" href="download/<?php echo $filename; ?>">Download Grages</a>
 </div>
-<?php } ?>
 <p>&nbsp;</p>
 
 <!--table table-bordered table-condensed table-hover-->
