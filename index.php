@@ -106,7 +106,7 @@ echo $OUTPUT->header();
 $PAGE->requires->js_call_amd('report_iomadfollowup/iomadfollowup', 'init');
 
 // downloadable file name
-$filename = 'followup_report_'.date('y-m-d_h_i_s').'.xlsx';
+$filename = 'followup_report_'.date('y-m-d_h_i_s').'.csv';
 ?>
 <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.15/css/jquery.dataTables.min.css">
 
@@ -144,38 +144,57 @@ if ($Capability->adminType != 'CompanyAdmin') {
 <!--table table-bordered table-condensed table-hover-->
 <div class="wrapperFloatTbl dataTables_wrapper">
 <?php
-$html = '';
-$html .= '<table id="reportTbl">';
-$html .= '<thead class="thead-default">';
-$html .= '<tr>';
-$html .= '<th>'.get_string('col_students_name',       'report_iomadfollowup').'</th>';
+// $html will be displayed
+// $csv will be downloaded
+$html = $csv = '';
+$csv_header = $csv_student = array();
+$html .= '<table id="reportTbl"><thead class="thead-default"><tr>';
+
+$html .= '<th>'.get_string('col_students_name', 'report_iomadfollowup').'</th>';
+$csv_header[] = get_string('col_students_name', 'report_iomadfollowup');
+
 $html .= '<th>'.get_string('col_students_department', 'report_iomadfollowup').'</th>';
-$html .= '<th>'.get_string('col_students_level',      'report_iomadfollowup').'</th>';
+$csv_header[] = get_string('col_students_department', 'report_iomadfollowup');
+
+$html .= '<th>'.get_string('col_students_level', 'report_iomadfollowup').'</th>';
+$csv_header[] = get_string('col_students_level', 'report_iomadfollowup');
 
 foreach ($Courses as $key => $course) {
 	$html .= '<th>'.$course->fullname.'</th>';
+	$csv_header[] = $course->fullname;
 }
 
-$html .= '</tr></thead>';
+$html .= '</tr></thead><tbody>';
 
-$html .= '<tbody>';
+$csv .= implode(',', $csv_header)."\n";
 
 foreach ($Students as $userId => $grades) {
 	$i = 0;
+
 	$html .= '<tr><td>'.$grades['profile']['name'].'</td>';
+	$csv_student[] = $grades['profile']['name'];
+
 	$html .= '<td>'.$grades['profile']['department'].'</td>';
+	$csv_student[] = $grades['profile']['department'];
+
 	$html .= '<td>'.$grades['profile']['level'].'</td>';
+	$csv_student[] = $grades['profile']['level'];
+
 	foreach ($grades['grades'] as $grade) {
 		// alternate col color
 		$colClass = (is_int($i/2) === true) ? 'col1' : 'col2';$i++;
 		$html .= '<td class="'.$colClass.'">'.$grade.'</td>';
+		$csv_student[] = $grade;
 	}
 	$html .= "</tr>\n";
+
+	$csv .= implode(',', $csv_student)."\n";
+	$csv_student = array();
 }
 $html .= '</tbody></table>';
 
 // write the html table so it can be downloaded
-file_put_contents($CFG->dirroot.'/report/iomadfollowup/download/'.$filename, $html);
+file_put_contents($CFG->dirroot.'/report/iomadfollowup/download/'.$filename, $csv);
 
 echo $html;
 ?>
