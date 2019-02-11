@@ -13,3 +13,7 @@
 .selected .col2 {
 	background-color: rgba(137, 196, 229, 0.9);
 }
+
+.thead-default th {
+	background-color: #eceeef;
+}
