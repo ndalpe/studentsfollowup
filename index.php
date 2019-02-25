@@ -137,7 +137,7 @@ if ($Capability->adminType != 'CompanyAdmin') {
 </div>
 <?php } ?>
 <div class="form-group">
-<a class="btn btn-primary" href="download/<?php echo $filename; ?>">Download Grages</a>
+<a class="btn btn-primary" href="download/<?php echo $filename; ?>"><?php echo get_string('download_grades', 'report_iomadfollowup'); ?></a>
 </div>
 <p>&nbsp;</p>
 

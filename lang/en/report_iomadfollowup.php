@@ -11,3 +11,5 @@ $string['choose_company'] = 'Choose a company';
 $string['col_students_name'] = "name";
 $string['col_students_department'] = "Department";
 $string['col_students_level'] = "Level";
+
+$string['download_grades'] = 'Download Grades';
