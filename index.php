@@ -25,8 +25,8 @@
 define('NO_OUTPUT_BUFFERING', true);
 
 require('../../config.php');
+require_once($CFG->dirroot . '/mod/quiz/lib.php');
 require_once($CFG->dirroot.'/report/iomadfollowup/locallib.php');
-require_once($CFG->libdir . '/gradelib.php');
 
 require_login(0, false);
 
@@ -175,7 +175,8 @@ foreach ($Students as $userId => $grades) {
 	$csv_student[] = $grades['profile']['name'];
 
 	$html .= '<td>'.$grades['profile']['department'].'</td>';
-	$csv_student[] = $grades['profile']['department'];
+	# replace the , in department name to remain compatible with the CSV format
+	$csv_student[] = str_replace(',', ' & ', $grades['profile']['department']);
 
 	$html .= '<td>'.$grades['profile']['level'].'</td>';
 	$csv_student[] = $grades['profile']['level'];
