@@ -180,19 +180,22 @@ class report_iomadfollowup {
 		// Add grades information
 		foreach ($Courses as $key => $courseId) {
 
-			// Get quiz ID
+			// Get quiz object
 			$Quiz = $this->getQuizInCourse($courseId);
 
-			// Get students grades for the current course/quiz
-			$grades = grade_get_grades($courseId, 'mod', 'quiz', $Quiz->id, array_keys($Users));
-			foreach ($grades->items[0]->grades as $userId => $userGrade) {
+			foreach ($Users as $userId => $user) {
 
-				// remove the annoying number of question ie. from "50 % (1)" to "50 %"
-				if ($userGrade->str_grade != '-') {
-					$a = explode('%', $userGrade->str_grade);
-					$userGrade->str_grade = $a[0].' %';
+				// Get the student grade for the current quiz
+				$userGrade = quiz_get_best_grade($Quiz, $userId);
+
+				if (is_null($userGrade)) {
+					$reportGrade = '-';
+				} else {
+					$reportGrade = $this->getPercent($userGrade, (int)$Quiz->grade);
+					$reportGrade .= " %";
 				}
-				$grid[$userId]['grades'][$Quiz->id] = $userGrade->str_grade;
+
+				$grid[$userId]['grades'][$Quiz->id] = $reportGrade;
 			}
 		}
 
@@ -215,5 +218,44 @@ class report_iomadfollowup {
 		}
 
 		return $grid;
+	}
+
+	/**
+	 * Return a % from given number
+	 *
+	 * int|float $number The number to be divided
+	 * int $divider The number to divide $number with
+	 * bool $precision False to round() the % or int to specifiy the precision
+	 *
+	*/
+	public function getPercent($number, $divider, $precision=false) {
+
+	    // make sure $number is numeric
+	    // and convert it into a int or a float
+	    if (is_numeric($number)) {
+	        $number += 0;
+	    } else if ($number === 0) {
+	        return $number;
+	    }
+
+	    // make sure $divider is numeric
+	    // and convert it into a int or a float
+	    if (is_numeric($divider)) {
+	        $divider += 0;
+	    } else if ($divider === 0) {
+	        return $divider;
+	    }
+
+	    // Make the % happen
+	    $percent = ($number/$divider) * 100;
+
+	    // round() the number according to $precision
+	    if (!$precision) {
+	        $percent = round($percent);
+	    } else {
+	        $percent = round($percent, $precision);
+	    }
+
+	    return $percent;
 	}
 }
