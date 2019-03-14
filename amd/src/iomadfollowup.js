@@ -1,8 +1,8 @@
 define(
     [
         'jquery',
-        '/report/studentsfollowup/amd/build/datatables.min.js',
-        '/report/studentsfollowup/amd/build/jquery.floatThead.min.js',
+        '/report/iomadfollowup/amd/build/datatables.min.js',
+        '/report/iomadfollowup/amd/build/jquery.floatThead.min.js'
     ],
     function($) {
     return {
