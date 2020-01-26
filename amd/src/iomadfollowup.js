@@ -22,7 +22,10 @@ define(
                         "bLengthChange": false,
                         "iDisplayLength": 1000,
                         "paging": false,
-                        "retrieve": true
+                        "retrieve": true,
+                        // "language": {
+                        //     "search": "Search in table:"
+                        // }
                     });
                 }
 

@@ -39,19 +39,32 @@ class report_iomadfollowup {
 	/**
 	*** The Course ID for the KP Essential course category
 	**/
-	public $coursesId = array(7,9,10,11,12,13,14,15,16,17,18);
+	public $coursesId;
+
+	public $painting  = array(7,9,10,11,12,13,14,15,16,17,18);
+
+	public $automotive = array(19,20,21,22,23,24,25,26,27,28,29);
 
 	/**
 	*** The Quiz ID for the KP Essential course category
 	**/
 	public $quizId   = array(2,3,4,5,6,7,8,9,10,11,12);
 
-	public function __construct(){
+	public function __construct($companyId){
 		if (!isset($DB)) {
 			global $DB;
 		}
-
 		$this->DB = $DB;
+
+		$this->setCompanyId($companyId);
+
+		if ($companyId == 12) {
+			$this->coursesId = $this->automotive;
+		} else {
+			$this->coursesId = $this->painting;
+		}
+
+
 	}
 
 	/**

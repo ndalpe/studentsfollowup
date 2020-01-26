@@ -13,3 +13,6 @@ $string['col_students_department'] = "Department";
 $string['col_students_level'] = "Level";
 
 $string['download_grades'] = 'Download Grades';
+
+$string['search'] = 'Search';
+

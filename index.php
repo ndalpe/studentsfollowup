@@ -88,10 +88,10 @@ if (empty($paramSelectedCompany)) {
 /******************************************/
 /************** BEGIN REPORT **************/
 /******************************************/
-$report = new report_iomadfollowup();
+$report = new report_iomadfollowup($paramCompanyId);
 
 // Set the admin company ID
-$report->setCompanyId($paramCompanyId);
+// $report->setCompanyId($paramCompanyId);
 
 // Get student's profile info and grades for all quiz
 $Students = $report->getStudentsGrades();
@@ -151,17 +151,34 @@ $csv_header = $csv_student = array();
 $html .= '<table id="reportTbl"><thead class="thead-default"><tr>';
 
 $html .= '<th>'.get_string('col_students_name', 'report_iomadfollowup').'</th>';
-$csv_header[] = get_string('col_students_name', 'report_iomadfollowup');
+
+// Keep columne name in English for KPJP
+// $csv_header[] = get_string('col_students_name', 'report_iomadfollowup');
+$csv_header[] = 'Name';
 
 $html .= '<th>'.get_string('col_students_department', 'report_iomadfollowup').'</th>';
-$csv_header[] = get_string('col_students_department', 'report_iomadfollowup');
+// $csv_header[] = get_string('col_students_department', 'report_iomadfollowup');
+$csv_header[] = 'Department';
 
 $html .= '<th>'.get_string('col_students_level', 'report_iomadfollowup').'</th>';
-$csv_header[] = get_string('col_students_level', 'report_iomadfollowup');
+// $csv_header[] = get_string('col_students_level', 'report_iomadfollowup');
+$csv_header[] = 'Level';
 
 foreach ($Courses as $key => $course) {
 	$html .= '<th>'.$course->fullname.'</th>';
-	$csv_header[] = $course->fullname;
+
+	/* Keep english name for JP report */
+	if ($course->id == "7") { $csv_header[] = "Day 1"; }
+	elseif ($course->id == "9") { $csv_header[] = "Day 2"; }
+	elseif ($course->id == "10") { $csv_header[] = "Day 3"; }
+	elseif ($course->id == "11") { $csv_header[] = "Day 4"; }
+	elseif ($course->id == "12") { $csv_header[] = "Day 5"; }
+	elseif ($course->id == "13") { $csv_header[] = "Day 6"; }
+	elseif ($course->id == "14") { $csv_header[] = "Day 7"; }
+	elseif ($course->id == "15") { $csv_header[] = "Day 8"; }
+	elseif ($course->id == "16") { $csv_header[] = "Day 9"; }
+	elseif ($course->id == "17") { $csv_header[] = "Day 10"; }
+	elseif ($course->id == "18") { $csv_header[] = "Final Test"; }
 }
 
 $html .= '</tr></thead><tbody>';
